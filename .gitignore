@@ -33,3 +33,6 @@ prisma/dev.db-journal
 .tools/
 .gh-config/
 .gh-status.txt
+
+.env*.local
+.next-dev*.log
