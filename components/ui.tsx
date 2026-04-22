@@ -142,7 +142,7 @@ export function GeezMark({ className }: { className?: string }) {
         "geez-ring grid size-12 place-items-center rounded-2xl font-display text-3xl font-bold text-leaf dark:text-saffron",
         className
       )}
-      aria-label="QalAmharic mark"
+      aria-label="FidelAmharic mark"
     >
       ቃ
     </div>

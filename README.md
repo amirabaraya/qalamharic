@@ -1,6 +1,6 @@
-# QalAmharic
+# FidelAmharic
 
-QalAmharic is a full-stack Amharic learning website built by Amir Abaraya with Next.js, TypeScript, Tailwind CSS, Prisma, PostgreSQL, and NextAuth.
+FidelAmharic is a full-stack Amharic learning website built by Amir Abaraya with Next.js, TypeScript, Tailwind CSS, Prisma, PostgreSQL, and NextAuth.
 
 ## Author
 
@@ -49,11 +49,11 @@ npm run dev
 Demo credentials seeded by `npm run db:seed`:
 
 - Email: `maya@example.com`
-- Password: `qalamharic-demo`
+- Password: `fidelamharic-demo`
 
 ## Deployment
 
-QalAmharic is ready for a serverless Next.js host such as Vercel. Configure these production environment variables before deploying:
+FidelAmharic is ready for a serverless Next.js host such as Vercel. Configure these production environment variables before deploying:
 
 - `DATABASE_URL`
 - `NEXTAUTH_URL`

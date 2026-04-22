@@ -3,10 +3,10 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 
 export const metadata: Metadata = {
-  title: "QalAmharic | Learn Amharic beautifully",
+  title: "FidelAmharic | Learn Amharic beautifully",
   description:
     "A premium Amharic learning platform with gamified lessons, pronunciation practice, spaced repetition, and culturally grounded design.",
-  applicationName: "QalAmharic"
+  applicationName: "FidelAmharic"
 };
 
 export default function RootLayout({

@@ -10,7 +10,7 @@ export default function SignupPage() {
         <div className="mb-8 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
             <GeezMark />
-            <span className="font-display text-3xl font-bold">QalAmharic</span>
+            <span className="font-display text-3xl font-bold">FidelAmharic</span>
           </Link>
           <ThemeToggle />
         </div>

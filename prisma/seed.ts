@@ -34,7 +34,7 @@ type SeedUnit = {
 };
 
 async function main() {
-  const passwordHash = await bcrypt.hash("qalamharic-demo", 12);
+  const passwordHash = await bcrypt.hash("fidelamharic-demo", 12);
 
   const user = await prisma.user.upsert({
     where: { email: "maya@example.com" },

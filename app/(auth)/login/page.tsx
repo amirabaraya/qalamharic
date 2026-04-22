@@ -10,7 +10,7 @@ export default function LoginPage() {
         <div className="mb-8 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
             <GeezMark />
-            <span className="font-display text-3xl font-bold">QalAmharic</span>
+            <span className="font-display text-3xl font-bold">FidelAmharic</span>
           </Link>
           <ThemeToggle />
         </div>
@@ -22,7 +22,7 @@ export default function LoginPage() {
             <h1 className="mt-2 font-display text-5xl font-bold">Continue your Amharic path</h1>
             <LoginForm />
             <p className="mt-6 text-center text-sm text-charcoal/68 dark:text-cream/68">
-              New to QalAmharic?{" "}
+              New to FidelAmharic?{" "}
               <Link href="/signup" className="font-bold text-leaf dark:text-saffron">
                 Create an account
               </Link>

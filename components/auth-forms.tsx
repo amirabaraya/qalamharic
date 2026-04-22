@@ -9,7 +9,7 @@ import { Button } from "@/components/ui";
 export function LoginForm() {
   const router = useRouter();
   const [email, setEmail] = useState("maya@example.com");
-  const [password, setPassword] = useState("qalamharic-demo");
+  const [password, setPassword] = useState("fidelamharic-demo");
   const [status, setStatus] = useState("");
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {

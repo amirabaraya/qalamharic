@@ -12,7 +12,7 @@ export function AppShell({ children, title }: { children: React.ReactNode; title
         <Link href="/dashboard" className="focus-ring mb-8 flex items-center gap-3 rounded-2xl">
           <GeezMark />
           <span>
-            <span className="block font-display text-3xl font-bold">QalAmharic</span>
+            <span className="block font-display text-3xl font-bold">FidelAmharic</span>
             <span className="text-xs font-semibold uppercase tracking-[0.18em] text-leaf dark:text-saffron">
               ቃል by ቃል
             </span>
@@ -44,7 +44,7 @@ export function AppShell({ children, title }: { children: React.ReactNode; title
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
             <div>
               <p className="text-xs font-black uppercase tracking-[0.22em] text-leaf dark:text-saffron">
-                QalAmharic
+                FidelAmharic
               </p>
               <h1 className="font-display text-3xl font-bold md:text-5xl">{title}</h1>
             </div>

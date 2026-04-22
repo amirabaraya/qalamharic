@@ -16,7 +16,7 @@ export default function LandingPage() {
                 Ethiopian-rooted, modern Amharic learning
               </div>
               <h1 className="font-display text-6xl font-bold leading-[0.92] text-charcoal dark:text-cream md:text-8xl">
-                QalAmharic
+                FidelAmharic
               </h1>
               <p className="mt-6 max-w-2xl text-xl leading-8 text-charcoal/72 dark:text-cream/72">
                 Learn Amharic through beautiful Ge&apos;ez script, human conversation, pronunciation practice,
@@ -110,7 +110,7 @@ export default function LandingPage() {
                 Start with sound and meaning before the script feels intimidating.
               </h2>
               <p className="mt-5 text-lg leading-8 text-charcoal/70 dark:text-cream/70">
-                QalAmharic introduces Amharic through English explanations, transliteration, slow audio, and
+                FidelAmharic introduces Amharic through English explanations, transliteration, slow audio, and
                 practical phrases first. The Ge&apos;ez script becomes familiar through repeated, meaningful use.
               </p>
             </div>
@@ -158,7 +158,7 @@ export default function LandingPage() {
               </p>
               <h2 className="mt-3 font-display text-5xl font-bold md:text-6xl">Read, hear, speak, write.</h2>
               <p className="mt-5 text-lg leading-8 text-charcoal/70 dark:text-cream/70">
-                QalAmharic mixes English-to-Amharic and Amharic-to-English exercises with pronunciation,
+                FidelAmharic mixes English-to-Amharic and Amharic-to-English exercises with pronunciation,
                 listening, vocabulary drills, and typed answers.
               </p>
             </div>
@@ -177,7 +177,7 @@ export default function LandingPage() {
         </section>
 
         <footer className="border-t border-charcoal/10 px-4 py-8 text-center text-sm font-bold text-charcoal/62 dark:border-cream/10 dark:text-cream/62">
-          QalAmharic was built by Amir Abaraya.
+          FidelAmharic was built by Amir Abaraya.
         </footer>
       </main>
     </>

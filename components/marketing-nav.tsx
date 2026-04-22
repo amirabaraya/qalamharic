@@ -9,7 +9,7 @@ export function MarketingNav() {
       <nav className="glass mx-auto flex max-w-7xl items-center justify-between rounded-full border border-charcoal/10 px-4 py-3 shadow-sm dark:border-cream/10">
         <Link href="/" className="focus-ring flex items-center gap-3 rounded-full">
           <GeezMark className="size-10 rounded-xl text-2xl" />
-          <span className="font-display text-2xl font-bold">QalAmharic</span>
+          <span className="font-display text-2xl font-bold">FidelAmharic</span>
         </Link>
         <div className="hidden items-center gap-7 text-sm font-semibold text-charcoal/70 dark:text-cream/70 md:flex">
           <Link className="hover:text-leaf dark:hover:text-saffron" href="/course">
