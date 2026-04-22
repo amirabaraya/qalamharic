@@ -31,3 +31,5 @@ prisma/dev.db-journal
 
 # local workspace tools
 .tools/
+.gh-config/
+.gh-status.txt
