@@ -6,6 +6,11 @@ FidelAmharic is a full-stack Amharic learning website built by Amir Abaraya with
 
 Built by Amir Abaraya.
 
+## Links
+
+- Live site: https://fidelamharic.vercel.app
+- GitHub: https://github.com/amirabaraya/fidelamharic
+
 ## Features
 
 - Premium Ethiopian-inspired brand system with Ge'ez-focused visual language
