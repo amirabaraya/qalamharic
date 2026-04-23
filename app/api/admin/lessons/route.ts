@@ -14,6 +14,18 @@ const lessonSchema = z.object({
   xpReward: z.number().int().min(5).max(200).default(25)
 });
 
+const updateLessonSchema = z.object({
+  id: z.string().min(1),
+  title: z.string().min(2).max(140).optional(),
+  description: z.string().min(10).max(700).optional(),
+  published: z.boolean().optional(),
+  audioUrl: z.string().url().optional().or(z.literal(""))
+});
+
+const deleteLessonSchema = z.object({
+  id: z.string().min(1)
+});
+
 function slugify(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
@@ -73,4 +85,42 @@ export async function POST(request: Request) {
   });
 
   return NextResponse.json({ lesson }, { status: 201 });
+}
+
+export async function PATCH(request: Request) {
+  const admin = await getApiAdmin();
+  if (!admin) return NextResponse.json({ error: "Admin access required." }, { status: 403 });
+
+  const parsed = updateLessonSchema.safeParse(await request.json());
+  if (!parsed.success) return NextResponse.json({ error: "Invalid lesson update." }, { status: 400 });
+
+  const lesson = await prisma.lesson.update({
+    where: { id: parsed.data.id },
+    data: {
+      title: parsed.data.title,
+      description: parsed.data.description,
+      published: parsed.data.published,
+      exercises: parsed.data.audioUrl !== undefined
+        ? {
+            updateMany: {
+              where: { lessonId: parsed.data.id },
+              data: { audioUrl: parsed.data.audioUrl || null }
+            }
+          }
+        : undefined
+    }
+  });
+
+  return NextResponse.json({ lesson });
+}
+
+export async function DELETE(request: Request) {
+  const admin = await getApiAdmin();
+  if (!admin) return NextResponse.json({ error: "Admin access required." }, { status: 403 });
+
+  const parsed = deleteLessonSchema.safeParse(await request.json());
+  if (!parsed.success) return NextResponse.json({ error: "Invalid lesson delete." }, { status: 400 });
+
+  await prisma.lesson.delete({ where: { id: parsed.data.id } });
+  return NextResponse.json({ ok: true });
 }

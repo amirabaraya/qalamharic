@@ -81,6 +81,9 @@ export function AppShell({
             </Link>
           ) : null}
         </nav>
+        <p className="absolute bottom-5 left-5 right-5 text-xs font-bold text-charcoal/40 dark:text-cream/42">
+          Built by Amir Abaraya.
+        </p>
       </aside>
 
       <main className="md:pl-72">
@@ -101,9 +104,6 @@ export function AppShell({
           </div>
         </header>
         <div className="mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8">{children}</div>
-        <footer className="mx-auto max-w-7xl px-4 pb-10 text-sm font-bold text-charcoal/54 dark:text-cream/54 md:px-8">
-          Built by Amir Abaraya.
-        </footer>
       </main>
 
       <nav className="fixed bottom-3 left-3 right-3 z-50 grid grid-cols-6 rounded-3xl border border-charcoal/10 bg-parchment/94 p-2 shadow-gold backdrop-blur-xl dark:border-cream/10 dark:bg-charcoal/94 md:hidden">

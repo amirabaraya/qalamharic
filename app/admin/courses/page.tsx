@@ -16,10 +16,27 @@ export default async function AdminCoursesPage() {
     prisma.user.findMany({
       orderBy: [{ role: "asc" }, { createdAt: "desc" }],
       take: 50,
-      select: { id: true, name: true, email: true, role: true, xp: true }
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        xp: true,
+        subscription: { select: { plan: true, status: true, currentPeriodEnd: true } }
+      }
     }),
     prisma.lesson.count()
   ]);
+
+  const studioUsers = users.map((user) => ({
+    ...user,
+    subscription: user.subscription
+      ? {
+          ...user.subscription,
+          currentPeriodEnd: user.subscription.currentPeriodEnd?.toISOString() ?? null
+        }
+      : null
+  }));
 
   return (
     <AppShell title="Admin Courses" learner={learner}>
@@ -50,7 +67,7 @@ export default async function AdminCoursesPage() {
         </p>
       </Card>
 
-      <AdminStudio units={units} users={users} canManageUsers={canManageUsers(learner.role)} />
+      <AdminStudio units={units} users={studioUsers} canManageUsers={canManageUsers(learner.role)} />
     </AppShell>
   );
 }

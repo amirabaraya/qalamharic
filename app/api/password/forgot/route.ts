@@ -19,21 +19,23 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "No FidelAmharic account uses that email." }, { status: 404 });
   }
 
-  const token = crypto.randomBytes(32).toString("hex");
-  await prisma.verificationToken.deleteMany({ where: { identifier: `password-reset:${email}` } });
+  const code = crypto.randomInt(100000, 999999).toString();
+  await prisma.verificationToken.deleteMany({ where: { identifier: `password-code:${email}` } });
   await prisma.verificationToken.create({
     data: {
-      identifier: `password-reset:${email}`,
-      token,
-      expires: new Date(Date.now() + 1000 * 60 * 30)
+      identifier: `password-code:${email}`,
+      token: code,
+      expires: new Date(Date.now() + 1000 * 60 * 10)
     }
   });
 
-  const origin = new URL(request.url).origin;
-  const resetUrl = `${origin}/reset-password?token=${token}`;
+  const canEmail = Boolean(process.env.EMAIL_FROM && process.env.RESEND_API_KEY);
 
   return NextResponse.json({
-    message: "Reset link created. It expires in 30 minutes.",
-    resetUrl
+    message: canEmail
+      ? "A 6-digit reset code was sent to your email."
+      : "Email delivery is not connected yet. Use this verification code to reset your password.",
+    delivery: canEmail ? "email" : "onscreen",
+    code: canEmail ? undefined : code
   });
 }

@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Check, GraduationCap, Headphones, Heart, Mic, Volume2, X } from "lucide-react";
 import { Button, Card, ProgressBar } from "@/components/ui";
 import { speakText } from "@/lib/speech";
@@ -45,7 +44,6 @@ function answerText(value: unknown) {
 }
 
 export function LessonPlayer({ learner, lesson, nextLessonSlug }: LessonPlayerProps) {
-  const router = useRouter();
   const firstExercise = lesson.exercises[0];
   const [selected, setSelected] = useState<string | null>(null);
   const [saved, setSaved] = useState(lesson.progress[0]?.percent === 100);
@@ -58,13 +56,22 @@ export function LessonPlayer({ learner, lesson, nextLessonSlug }: LessonPlayerPr
   const translation = firstExercise?.englishText ?? lesson.description;
   const isCorrect = selected === correctAnswer;
 
+  useEffect(() => {
+    setSelected(null);
+    setSaved(lesson.progress[0]?.percent === 100);
+    setSaving(false);
+    setTeacherStatus("Start with the sound, then choose the meaning.");
+  }, [lesson.id, lesson.progress]);
+
   async function completeLesson(selectedAnswer: string) {
     if (selectedAnswer !== correctAnswer) {
       setTeacherStatus("Choose the correct meaning first, then finish the lesson.");
       return;
     }
     if (saved) {
-      if (nextLessonSlug) router.push(`/lesson?lesson=${nextLessonSlug}`);
+      if (nextLessonSlug) {
+        window.location.assign(`/lesson?lesson=${nextLessonSlug}`);
+      }
       return;
     }
     setSaving(true);
@@ -80,9 +87,9 @@ export function LessonPlayer({ learner, lesson, nextLessonSlug }: LessonPlayerPr
       const nextSlug = body?.nextLessonSlug ?? nextLessonSlug;
       setTeacherStatus(nextSlug ? `Lesson complete. Moving to the next chapter...` : `Lesson complete. You earned ${lesson.xpReward} XP.`);
       if (nextSlug) {
-        window.setTimeout(() => router.push(`/lesson?lesson=${nextSlug}`), 850);
+        window.setTimeout(() => window.location.assign(`/lesson?lesson=${nextSlug}`), 250);
       } else {
-        window.setTimeout(() => router.push("/course"), 850);
+        window.setTimeout(() => window.location.assign("/course"), 250);
       }
       return;
     }
@@ -92,9 +99,12 @@ export function LessonPlayer({ learner, lesson, nextLessonSlug }: LessonPlayerPr
   }
 
   function chooseAnswer(option: string) {
+    if (saving || saved) return;
     setSelected(option);
     if (option === correctAnswer) {
       void completeLesson(option);
+    } else {
+      setTeacherStatus("Try again. Listen once more, then choose the matching meaning.");
     }
   }
 
@@ -169,8 +179,9 @@ export function LessonPlayer({ learner, lesson, nextLessonSlug }: LessonPlayerPr
                   onClick={() => chooseAnswer(option)}
                   disabled={saving || saved}
                   className={cn(
-                    "focus-ring rounded-2xl border border-charcoal/10 bg-cream p-5 text-left text-xl font-bold transition hover:-translate-y-0.5 dark:border-cream/10 dark:bg-ink/64",
-                    active && "border-saffron bg-saffron/18"
+                    "focus-ring rounded-2xl border border-charcoal/10 bg-cream p-5 text-left text-xl font-bold text-charcoal transition hover:-translate-y-0.5 disabled:cursor-wait disabled:opacity-80 dark:border-cream/10 dark:bg-ink/64 dark:text-cream",
+                    active && isCorrect && "border-leaf bg-leaf/15 dark:border-saffron dark:bg-saffron/18",
+                    active && !isCorrect && "border-ember bg-ember/12"
                   )}
                 >
                   {option}
@@ -180,20 +191,18 @@ export function LessonPlayer({ learner, lesson, nextLessonSlug }: LessonPlayerPr
           </div>
         </div>
 
-        {selected ? (
+        {selected && !isCorrect ? (
           <div
             className={cn(
               "relative z-10 mt-6 flex flex-col gap-3 rounded-2xl p-4 font-bold sm:flex-row sm:items-center sm:justify-between",
-              isCorrect ? "bg-leaf text-cream" : "bg-ember text-cream"
+              "bg-ember text-cream"
             )}
             role="status"
           >
             <span className="flex items-center gap-2">
-              {isCorrect ? <Check /> : <X />} {isCorrect ? "Correct. Progress saved automatically." : firstExercise?.explanation ?? "Close. Listen once more and try again."}
+              <X /> Try again. Listen once more and choose the matching meaning.
             </span>
-            <span className="rounded-full bg-cream px-4 py-2 text-sm font-black text-leaf">
-              {saving ? "Saving..." : saved ? "Saved" : "Try again"}
-            </span>
+            <span className="rounded-full bg-cream px-4 py-2 text-sm font-black text-ember">Not yet</span>
           </div>
         ) : null}
       </Card>
@@ -215,7 +224,7 @@ export function LessonPlayer({ learner, lesson, nextLessonSlug }: LessonPlayerPr
               { icon: Mic, label: "Pronunciation", done: false },
               { icon: Check, label: "Meaning", done: saved }
             ].map((item) => (
-              <div key={item.label} className="flex items-center justify-between rounded-2xl bg-cream p-4 dark:bg-ink/64">
+              <div key={item.label} className="flex items-center justify-between rounded-2xl bg-cream p-4 text-charcoal dark:bg-ink/64 dark:text-cream">
                 <span className="flex items-center gap-3 font-bold">
                   <item.icon className="text-leaf dark:text-saffron" /> {item.label}
                 </span>

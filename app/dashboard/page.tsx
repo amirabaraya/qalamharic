@@ -21,7 +21,7 @@ export default async function DashboardPage() {
   const activeUnit = courseMap.find((unit) => unit.progress < 100) ?? courseMap[0];
   const nextLessons = courseMap.flatMap((unit) =>
     unit.lessons
-      .filter((lesson) => lesson.progress < 100)
+      .filter((lesson) => !lesson.locked && lesson.progress < 100)
       .slice(0, 2)
       .map((lesson) => ({ ...lesson, unitTitle: unit.subtitle }))
   ).slice(0, 3);

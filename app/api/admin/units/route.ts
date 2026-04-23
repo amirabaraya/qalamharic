@@ -10,6 +10,17 @@ const unitSchema = z.object({
   level: z.nativeEnum(Level).default(Level.BEGINNER)
 });
 
+const updateUnitSchema = z.object({
+  id: z.string().min(1),
+  title: z.string().min(2).max(120).optional(),
+  description: z.string().min(10).max(600).optional(),
+  level: z.nativeEnum(Level).optional()
+});
+
+const deleteUnitSchema = z.object({
+  id: z.string().min(1)
+});
+
 function slugify(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
@@ -35,4 +46,34 @@ export async function POST(request: Request) {
   });
 
   return NextResponse.json({ unit }, { status: 201 });
+}
+
+export async function PATCH(request: Request) {
+  const admin = await getApiAdmin();
+  if (!admin) return NextResponse.json({ error: "Admin access required." }, { status: 403 });
+
+  const parsed = updateUnitSchema.safeParse(await request.json());
+  if (!parsed.success) return NextResponse.json({ error: "Invalid unit update." }, { status: 400 });
+
+  const unit = await prisma.courseUnit.update({
+    where: { id: parsed.data.id },
+    data: {
+      title: parsed.data.title,
+      description: parsed.data.description,
+      level: parsed.data.level
+    }
+  });
+
+  return NextResponse.json({ unit });
+}
+
+export async function DELETE(request: Request) {
+  const admin = await getApiAdmin();
+  if (!admin) return NextResponse.json({ error: "Admin access required." }, { status: 403 });
+
+  const parsed = deleteUnitSchema.safeParse(await request.json());
+  if (!parsed.success) return NextResponse.json({ error: "Invalid unit delete." }, { status: 400 });
+
+  await prisma.courseUnit.delete({ where: { id: parsed.data.id } });
+  return NextResponse.json({ ok: true });
 }

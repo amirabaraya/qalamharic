@@ -20,6 +20,7 @@ type AdminUser = {
   email: string | null;
   role: string;
   xp: number;
+  subscription: { plan: string; status: string; currentPeriodEnd: Date | string | null } | null;
 };
 
 export function AdminStudio({ units, users, canManageUsers }: { units: AdminUnit[]; users: AdminUser[]; canManageUsers: boolean }) {
@@ -53,6 +54,46 @@ export function AdminStudio({ units, users, canManageUsers }: { units: AdminUnit
     }
     setStatus(message);
     router.refresh();
+  }
+
+  async function deleteJson(url: string, body: unknown, message: string) {
+    setStatus("Deleting...");
+    const response = await fetch(url, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+    const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+    if (!response.ok) {
+      setStatus(payload?.error ?? "Could not delete.");
+      return;
+    }
+    setStatus(message);
+    router.refresh();
+  }
+
+  function editUnit(unit: AdminUnit) {
+    const title = window.prompt("Unit title", unit.title);
+    if (!title) return;
+    const description = window.prompt("Unit description", unit.description);
+    if (!description) return;
+    return submitJson("/api/admin/units", "PATCH", { id: unit.id, title, description }, "Unit updated.");
+  }
+
+  function editLesson(lesson: { id: string; title: string; published: boolean }) {
+    const title = window.prompt("Lesson title", lesson.title);
+    if (!title) return;
+    return submitJson("/api/admin/lessons", "PATCH", { id: lesson.id, title, published: lesson.published }, "Lesson updated.");
+  }
+
+  function attachAudio(lesson: { id: string }) {
+    const audioUrl = window.prompt("Paste an MP3/audio URL for this lesson");
+    if (audioUrl === null) return;
+    return submitJson("/api/admin/lessons", "PATCH", { id: lesson.id, audioUrl }, "Audio URL saved.");
+  }
+
+  function grantAccess(userId: string, plan: string, status: string, days: number) {
+    return submitJson("/api/admin/access", "PATCH", { userId, plan, status, days }, "Access updated.");
   }
 
   return (
@@ -138,6 +179,8 @@ export function AdminStudio({ units, users, canManageUsers }: { units: AdminUnit
                 <div className="flex gap-2">
                   <Button variant="secondary" onClick={() => submitJson("/api/admin/reorder", "PATCH", { type: "unit", id: unit.id, direction: "up" }, "Unit moved.")}><ArrowUp size={16} /></Button>
                   <Button variant="secondary" onClick={() => submitJson("/api/admin/reorder", "PATCH", { type: "unit", id: unit.id, direction: "down" }, "Unit moved.")}><ArrowDown size={16} /></Button>
+                  <Button variant="ghost" onClick={() => editUnit(unit)}>Edit</Button>
+                  <Button variant="ghost" onClick={() => deleteJson("/api/admin/units", { id: unit.id }, "Unit deleted.")}>Delete</Button>
                 </div>
               </div>
               <div className="mt-3 space-y-2">
@@ -147,6 +190,10 @@ export function AdminStudio({ units, users, canManageUsers }: { units: AdminUnit
                     <span className="flex gap-2">
                       <Button variant="ghost" onClick={() => submitJson("/api/admin/reorder", "PATCH", { type: "lesson", id: lesson.id, direction: "up" }, "Lesson moved.")}><ArrowUp size={14} /></Button>
                       <Button variant="ghost" onClick={() => submitJson("/api/admin/reorder", "PATCH", { type: "lesson", id: lesson.id, direction: "down" }, "Lesson moved.")}><ArrowDown size={14} /></Button>
+                      <Button variant="ghost" onClick={() => editLesson(lesson)}>Edit</Button>
+                      <Button variant="ghost" onClick={() => attachAudio(lesson)}>Audio</Button>
+                      <Button variant="ghost" onClick={() => submitJson("/api/admin/lessons", "PATCH", { id: lesson.id, published: !lesson.published }, "Publish state changed.")}>{lesson.published ? "Unpublish" : "Publish"}</Button>
+                      <Button variant="ghost" onClick={() => deleteJson("/api/admin/lessons", { id: lesson.id }, "Lesson deleted.")}>Delete</Button>
                     </span>
                   </div>
                 ))}
@@ -162,7 +209,7 @@ export function AdminStudio({ units, users, canManageUsers }: { units: AdminUnit
           <div className="mt-5 overflow-hidden rounded-2xl border border-charcoal/10 dark:border-cream/10">
             <table className="w-full border-collapse text-left text-sm">
               <thead className="bg-cream text-xs uppercase tracking-[0.16em] text-charcoal/58 dark:bg-ink dark:text-cream/58">
-                <tr><th className="p-4">Name</th><th className="p-4">Email</th><th className="p-4">Role</th><th className="p-4">XP</th></tr>
+                <tr><th className="p-4">Name</th><th className="p-4">Email</th><th className="p-4">Role</th><th className="p-4">Plan</th><th className="p-4">Actions</th></tr>
               </thead>
               <tbody>
                 {users.map((user) => (
@@ -170,7 +217,16 @@ export function AdminStudio({ units, users, canManageUsers }: { units: AdminUnit
                     <td className="p-4 font-bold">{user.name ?? "Learner"}</td>
                     <td className="p-4">{user.email}</td>
                     <td className="p-4">{user.role}</td>
-                    <td className="p-4">{user.xp}</td>
+                    <td className="p-4">
+                      {user.subscription ? `${user.subscription.plan} / ${user.subscription.status}` : "No plan"}
+                    </td>
+                    <td className="p-4">
+                      <div className="flex flex-wrap gap-2">
+                        <Button variant="ghost" onClick={() => grantAccess(user.id, "FREE", "active", 365)}>Free year</Button>
+                        <Button variant="ghost" onClick={() => grantAccess(user.id, "PLUS", "trialing", 14)}>Trial</Button>
+                        <Button variant="ghost" onClick={() => grantAccess(user.id, "FREE", "inactive", 0)}>Disable</Button>
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
