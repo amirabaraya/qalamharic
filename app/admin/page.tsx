@@ -1,10 +1,13 @@
 import { AppShell } from "@/components/app-shell";
 import { AdminContentPanel } from "@/components/admin-content-panel";
 import { Button, Card } from "@/components/ui";
+import { getCurrentLearner } from "@/lib/learner";
 
-export default function AdminPage() {
+export default async function AdminPage() {
+  const learner = await getCurrentLearner();
+
   return (
-    <AppShell title="Admin Content Panel">
+    <AppShell title="Admin Content Panel" learner={learner}>
       <Card className="mb-5 bg-leaf text-cream">
         <p className="text-xs font-black uppercase tracking-[0.22em] text-cream/70">Admin shortcut</p>
         <h2 className="mt-2 font-display text-4xl font-bold">Review the full course catalog.</h2>

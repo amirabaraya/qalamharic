@@ -1,7 +1,7 @@
 import { ArrowRight, BookOpen, CheckCircle2, Flame, Heart, Mic, Sparkles } from "lucide-react";
 import { MarketingNav } from "@/components/marketing-nav";
 import { Button, Card, GeezMark, ProgressBar, SectionHeading, StatPill } from "@/components/ui";
-import { lessons, practiceSets, units, user } from "@/lib/learning-data";
+import { lessons, practiceSets, units } from "@/lib/learning-data";
 
 export default function LandingPage() {
   return (
@@ -27,7 +27,7 @@ export default function LandingPage() {
                   Start learning <ArrowRight size={18} />
                 </Button>
                 <Button href="/dashboard" variant="secondary">
-                  View demo dashboard
+                  Open learner dashboard
                 </Button>
                 <Button href="/pricing" variant="ghost">
                   See plans
@@ -57,17 +57,17 @@ export default function LandingPage() {
                   <div className="grid grid-cols-3 gap-3">
                     <div className="rounded-2xl bg-cream p-4 text-center dark:bg-ink/65">
                       <Flame className="mx-auto text-ember" />
-                      <strong className="mt-2 block">{user.streak}</strong>
+                      <strong className="mt-2 block">0</strong>
                       <span className="text-xs text-charcoal/60 dark:text-cream/60">days</span>
                     </div>
                     <div className="rounded-2xl bg-cream p-4 text-center dark:bg-ink/65">
                       <Heart className="mx-auto text-leaf" />
-                      <strong className="mt-2 block">{user.hearts}</strong>
+                      <strong className="mt-2 block">5</strong>
                       <span className="text-xs text-charcoal/60 dark:text-cream/60">hearts</span>
                     </div>
                     <div className="rounded-2xl bg-cream p-4 text-center dark:bg-ink/65">
                       <Sparkles className="mx-auto text-saffron" />
-                      <strong className="mt-2 block">{user.weeklyXp}</strong>
+                      <strong className="mt-2 block">0</strong>
                       <span className="text-xs text-charcoal/60 dark:text-cream/60">XP</span>
                     </div>
                   </div>
@@ -75,10 +75,10 @@ export default function LandingPage() {
                     <div className="mb-2 flex justify-between text-sm font-bold">
                       <span>Daily goal</span>
                       <span>
-                        {user.dailyGoal}/{user.dailyGoalTarget} XP
+                        0/45 XP
                       </span>
                     </div>
-                    <ProgressBar value={(user.dailyGoal / user.dailyGoalTarget) * 100} />
+                    <ProgressBar value={0} />
                   </div>
                 </div>
               </Card>

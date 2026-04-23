@@ -1,11 +1,38 @@
 import Link from "next/link";
-import { CreditCard, LibraryBig, Settings } from "lucide-react";
+import { BarChart3, BookOpen, CreditCard, Dumbbell, LibraryBig, Medal, Repeat2, Settings, UserRound } from "lucide-react";
 import { GeezMark, StatPill } from "@/components/ui";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { navItems, user } from "@/lib/learning-data";
 import { Flame, Heart, Sparkles } from "lucide-react";
+import type { LearnerStats } from "@/lib/learner";
 
-export function AppShell({ children, title }: { children: React.ReactNode; title: string }) {
+const navItems = [
+  { href: "/dashboard", label: "Dashboard", icon: BarChart3 },
+  { href: "/course", label: "Course", icon: BookOpen },
+  { href: "/practice", label: "Practice", icon: Dumbbell },
+  { href: "/review", label: "Review", icon: Repeat2 },
+  { href: "/leaderboard", label: "League", icon: Medal },
+  { href: "/profile", label: "Profile", icon: UserRound }
+];
+
+const emptyStats: LearnerStats = {
+  id: "",
+  name: "Learner",
+  email: "",
+  streak: 0,
+  xp: 0,
+  hearts: 5,
+  dailyGoal: 45
+};
+
+export function AppShell({
+  children,
+  title,
+  learner = emptyStats
+}: {
+  children: React.ReactNode;
+  title: string;
+  learner?: LearnerStats;
+}) {
   return (
     <div className="min-h-screen pb-24 md:pb-0">
       <aside className="fixed left-0 top-0 z-40 hidden h-screen w-72 border-r border-charcoal/10 bg-parchment/90 px-5 py-6 backdrop-blur-xl dark:border-cream/10 dark:bg-ink/88 md:block">
@@ -63,9 +90,9 @@ export function AppShell({ children, title }: { children: React.ReactNode; title
               <h1 className="font-display text-3xl font-bold md:text-5xl">{title}</h1>
             </div>
             <div className="hidden items-center gap-2 lg:flex">
-              <StatPill icon={Flame} label="Streak" value={`${user.streak} days`} tone="ember" />
-              <StatPill icon={Sparkles} label="XP" value={user.xp.toLocaleString()} tone="gold" />
-              <StatPill icon={Heart} label="Hearts" value={user.hearts} tone="green" />
+              <StatPill icon={Flame} label="Streak" value={`${learner.streak} days`} tone="ember" />
+              <StatPill icon={Sparkles} label="XP" value={learner.xp.toLocaleString()} tone="gold" />
+              <StatPill icon={Heart} label="Hearts" value={learner.hearts} tone="green" />
             </div>
             <ThemeToggle />
           </div>

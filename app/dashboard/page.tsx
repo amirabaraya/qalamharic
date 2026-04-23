@@ -1,23 +1,53 @@
-import { Award, CalendarDays, Flame, Heart, Sparkles, Target } from "lucide-react";
+import { Award, BookOpen, CalendarDays, Ear, Flame, Heart, Mic2, PenLine, Sparkles, Target } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
-import { Card, ProgressBar, StatPill } from "@/components/ui";
-import { badges, lessons, skills, units, user } from "@/lib/learning-data";
+import { Button, Card, ProgressBar, StatPill } from "@/components/ui";
+import { calculateSkillBalance, getCourseMapForUser, getCurrentLearner } from "@/lib/learner";
+import { prisma } from "@/lib/prisma";
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const learner = await getCurrentLearner();
+  const [courseMap, progress, earnedBadges] = await Promise.all([
+    getCourseMapForUser(learner.id),
+    prisma.progress.findMany({
+      where: { userId: learner.id },
+      select: { percent: true, correct: true, attempts: true, completedAt: true }
+    }),
+    prisma.userBadge.findMany({
+      where: { userId: learner.id },
+      include: { badge: true }
+    })
+  ]);
+
+  const activeUnit = courseMap.find((unit) => unit.progress < 100) ?? courseMap[0];
+  const nextLessons = courseMap.flatMap((unit) =>
+    unit.lessons
+      .filter((lesson) => lesson.progress < 100)
+      .slice(0, 2)
+      .map((lesson) => ({ ...lesson, unitTitle: unit.subtitle }))
+  ).slice(0, 3);
+  const completedToday = progress.filter(
+    (item) => item.completedAt && item.completedAt.toDateString() === new Date().toDateString()
+  ).length;
+  const dailyProgress = Math.min(100, Math.round((learner.xp / Math.max(learner.dailyGoal, 1)) * 100));
+  const skillIcons = [BookOpen, Ear, Mic2, PenLine];
+  const skillBalance = calculateSkillBalance(progress);
+
   return (
-    <AppShell title="Dashboard">
+    <AppShell title="Dashboard" learner={learner}>
       <div className="grid gap-5 lg:grid-cols-[1.4fr_0.8fr]">
         <Card className="pattern bg-leaf text-cream">
           <div className="relative z-10">
             <p className="text-xs font-black uppercase tracking-[0.22em] text-cream/70">Today&apos;s path</p>
-            <h2 className="mt-3 font-display text-5xl font-bold">A little Amharic, every day.</h2>
+            <h2 className="mt-3 font-display text-5xl font-bold">
+              {learner.xp === 0 ? "Start your first Amharic lesson." : "Keep building your Amharic."}
+            </h2>
             <p className="mt-4 max-w-2xl text-cream/78">
-              Continue Unit 2 with market phrases, then clear your spaced repetition queue while the words are fresh.
+              Begin with fidel sounds, simple greetings, and English explanations made for first-time Amharic learners.
             </p>
             <div className="mt-8 grid gap-3 sm:grid-cols-3">
-              <StatPill icon={Flame} label="Streak" value={`${user.streak} days`} tone="ember" />
-              <StatPill icon={Sparkles} label="Weekly XP" value={user.weeklyXp} tone="gold" />
-              <StatPill icon={Heart} label="Hearts" value={user.hearts} />
+              <StatPill icon={Flame} label="Streak" value={`${learner.streak} days`} tone="ember" />
+              <StatPill icon={Sparkles} label="Total XP" value={learner.xp} tone="gold" />
+              <StatPill icon={Heart} label="Hearts" value={learner.hearts} />
             </div>
           </div>
         </Card>
@@ -26,13 +56,13 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-bold text-charcoal/62 dark:text-cream/62">Daily goal</p>
-              <h3 className="font-display text-4xl font-bold">{user.dailyGoalTarget} XP</h3>
+              <h3 className="font-display text-4xl font-bold">{learner.dailyGoal} XP</h3>
             </div>
             <Target className="text-saffron" size={34} />
           </div>
-          <ProgressBar value={(user.dailyGoal / user.dailyGoalTarget) * 100} className="mt-5" />
+          <ProgressBar value={dailyProgress} className="mt-5" />
           <p className="mt-3 text-sm text-charcoal/64 dark:text-cream/64">
-            {user.dailyGoalTarget - user.dailyGoal} XP left to keep the rhythm.
+            {learner.xp === 0 ? "Earn your first XP by finishing Lesson 1." : `${completedToday} lesson${completedToday === 1 ? "" : "s"} completed today.`}
           </p>
         </Card>
       </div>
@@ -44,14 +74,17 @@ export default function DashboardPage() {
             <CalendarDays className="text-leaf dark:text-saffron" />
           </div>
           <div className="grid gap-4 md:grid-cols-3">
-            {lessons.map((lesson) => (
+            {nextLessons.map((lesson) => (
               <div key={lesson.id} className="rounded-2xl bg-cream p-4 dark:bg-ink/64">
                 <p className="text-xs font-black uppercase tracking-[0.18em] text-leaf dark:text-saffron">
-                  {lesson.type}
+                  {lesson.progress === 0 ? "New chapter" : "In progress"}
                 </p>
                 <h3 className="mt-3 font-display text-3xl font-bold">{lesson.title}</h3>
-                <p className="mt-2 text-sm text-charcoal/64 dark:text-cream/64">{lesson.unit}</p>
-                <p className="mt-4 text-sm font-bold">{lesson.xp} XP • {lesson.minutes} min</p>
+                <p className="mt-2 text-sm text-charcoal/64 dark:text-cream/64">{lesson.unitTitle}</p>
+                <p className="mt-4 text-sm font-bold">{lesson.xpReward} XP | {lesson.durationMin} min</p>
+                <Button href={`/lesson?lesson=${lesson.slug}`} className="mt-4 w-full" variant="secondary">
+                  {lesson.progress === 0 ? "Start" : "Continue"}
+                </Button>
               </div>
             ))}
           </div>
@@ -60,18 +93,21 @@ export default function DashboardPage() {
         <Card>
           <h2 className="font-display text-4xl font-bold">Skill balance</h2>
           <div className="mt-5 space-y-4">
-            {skills.map((skill) => (
-              <div key={skill.label}>
-                <div className="mb-2 flex items-center justify-between text-sm font-bold">
-                  <span className="flex items-center gap-2">
-                    <skill.icon size={17} className="text-leaf dark:text-saffron" />
-                    {skill.label}
-                  </span>
-                  <span>{skill.value}%</span>
+            {skillBalance.map((skill, index) => {
+              const Icon = skillIcons[index];
+              return (
+                <div key={skill.label}>
+                  <div className="mb-2 flex items-center justify-between text-sm font-bold">
+                    <span className="flex items-center gap-2">
+                      <Icon size={17} className="text-leaf dark:text-saffron" />
+                      {skill.label}
+                    </span>
+                    <span>{skill.value}%</span>
+                  </div>
+                  <ProgressBar value={skill.value} />
                 </div>
-                <ProgressBar value={skill.value} />
-              </div>
-            ))}
+              );
+            })}
           </div>
         </Card>
       </div>
@@ -80,7 +116,7 @@ export default function DashboardPage() {
         <Card>
           <h2 className="font-display text-4xl font-bold">Active unit</h2>
           <div className="mt-5 space-y-4">
-            {units.slice(0, 3).map((unit) => (
+            {(activeUnit ? [activeUnit, ...courseMap.filter((unit) => unit.id !== activeUnit.id).slice(0, 2)] : []).map((unit) => (
               <div key={unit.id} className="rounded-2xl bg-cream p-4 dark:bg-ink/64">
                 <div className="mb-2 flex justify-between text-sm font-bold">
                   <span>{unit.subtitle}</span>
@@ -97,18 +133,20 @@ export default function DashboardPage() {
             <Award className="text-saffron" />
             <h2 className="font-display text-4xl font-bold">Badges</h2>
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {badges.map((badge) => (
-              <div
-                key={badge.label}
-                className="rounded-2xl bg-cream p-4 text-center dark:bg-ink/64"
-                aria-label={`${badge.label} ${badge.earned ? "earned" : "locked"}`}
-              >
-                <badge.icon className={badge.earned ? "mx-auto text-saffron" : "mx-auto text-charcoal/28 dark:text-cream/28"} />
-                <p className="mt-2 text-sm font-bold">{badge.label}</p>
-              </div>
-            ))}
-          </div>
+          {earnedBadges.length === 0 ? (
+            <p className="rounded-2xl bg-cream p-4 text-sm font-bold text-charcoal/62 dark:bg-ink/64 dark:text-cream/62">
+              No badges yet. Finish your first lesson to begin the collection.
+            </p>
+          ) : (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {earnedBadges.map(({ badge }) => (
+                <div key={badge.id} className="rounded-2xl bg-cream p-4 text-center dark:bg-ink/64">
+                  <Award className="mx-auto text-saffron" />
+                  <p className="mt-2 text-sm font-bold">{badge.name}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </Card>
       </div>
     </AppShell>

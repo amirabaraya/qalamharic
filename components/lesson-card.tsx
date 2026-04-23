@@ -1,23 +1,25 @@
-import { CheckCircle2, Lock, PlayCircle } from "lucide-react";
+import { CheckCircle2, PlayCircle } from "lucide-react";
 import { Button, Card, ProgressBar } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
 export function UnitCard({
-  unit,
-  index
+  unit
 }: {
   unit: {
     title: string;
     subtitle: string;
     level: string;
     progress: number;
-    lessons: string[];
-    color: string;
+    lessons: Array<{
+      slug: string;
+      title: string;
+      progress: number;
+      exerciseCount: number;
+    }>;
   };
-  index: number;
 }) {
-  const isLocked = unit.progress === 0;
   const isComplete = unit.progress === 100;
+  const nextLesson = unit.lessons.find((lesson) => lesson.progress < 100) ?? unit.lessons[0];
 
   return (
     <Card className="pattern relative overflow-hidden">
@@ -32,19 +34,20 @@ export function UnitCard({
         <div
           className={cn(
             "grid size-14 place-items-center rounded-2xl text-cream",
-            isComplete ? "bg-leaf" : isLocked ? "bg-charcoal/30" : "bg-saffron text-ink"
+            isComplete ? "bg-leaf" : unit.progress === 0 ? "bg-saffron text-ink" : "bg-saffron text-ink"
           )}
         >
-          {isComplete ? <CheckCircle2 /> : isLocked ? <Lock /> : <PlayCircle />}
+          {isComplete ? <CheckCircle2 /> : unit.progress === 0 ? <PlayCircle /> : <PlayCircle />}
         </div>
       </div>
       <div className="relative z-10 mt-6 space-y-3">
         {unit.lessons.map((lesson, lessonIndex) => (
-          <div key={lesson} className="flex items-center gap-3 text-sm font-semibold">
+          <div key={lesson.slug} className="flex items-center gap-3 text-sm font-semibold">
             <span className="grid size-7 place-items-center rounded-full bg-charcoal/8 text-xs dark:bg-cream/10">
-              {index + lessonIndex + 1}
+              {lessonIndex + 1}
             </span>
-            {lesson}
+            <span className="min-w-0 flex-1">{lesson.title}</span>
+            <span className="text-xs text-charcoal/48 dark:text-cream/48">{lesson.progress}%</span>
           </div>
         ))}
       </div>
@@ -55,8 +58,8 @@ export function UnitCard({
         </div>
         <ProgressBar value={unit.progress} />
       </div>
-      <Button href="/lesson" className="relative z-10 mt-6 w-full" variant={isLocked ? "secondary" : "primary"}>
-        {isLocked ? "Preview unit" : "Continue"}
+      <Button href={`/lesson?lesson=${nextLesson?.slug ?? ""}`} className="relative z-10 mt-6 w-full" variant="primary">
+        {unit.progress === 0 ? "Start unit" : isComplete ? "Review unit" : "Continue"}
       </Button>
     </Card>
   );

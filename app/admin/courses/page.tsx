@@ -2,12 +2,14 @@ import { BookOpen, FileText, Layers3 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Card } from "@/components/ui";
 import { fullCourseCatalog, sourceMaterials } from "@/lib/course-catalog";
+import { getCurrentLearner } from "@/lib/learner";
 
-export default function AdminCoursesPage() {
+export default async function AdminCoursesPage() {
+  const learner = await getCurrentLearner();
   const lessonCount = fullCourseCatalog.reduce((total, unit) => total + unit.lessons.length, 0);
 
   return (
-    <AppShell title="Admin Courses">
+    <AppShell title="Admin Courses" learner={learner}>
       <div className="grid gap-5 md:grid-cols-3">
         <Card>
           <Layers3 className="text-leaf dark:text-saffron" />

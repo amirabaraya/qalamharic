@@ -1,9 +1,12 @@
 import { AppShell } from "@/components/app-shell";
 import { SettingsPanel } from "@/components/settings-panel";
+import { getCurrentLearner } from "@/lib/learner";
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  const learner = await getCurrentLearner();
+
   return (
-    <AppShell title="Settings">
+    <AppShell title="Settings" learner={learner}>
       <SettingsPanel />
     </AppShell>
   );
