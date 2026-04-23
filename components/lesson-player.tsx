@@ -49,6 +49,7 @@ export function LessonPlayer({ learner, lesson, nextLessonSlug }: LessonPlayerPr
   const firstExercise = lesson.exercises[0];
   const [selected, setSelected] = useState<string | null>(null);
   const [saved, setSaved] = useState(lesson.progress[0]?.percent === 100);
+  const [saving, setSaving] = useState(false);
   const [teacherStatus, setTeacherStatus] = useState("Start with the sound, then choose the meaning.");
   const options = asStringArray(firstExercise?.options);
   const correctAnswer = answerText(firstExercise?.answer);
@@ -57,8 +58,8 @@ export function LessonPlayer({ learner, lesson, nextLessonSlug }: LessonPlayerPr
   const translation = firstExercise?.englishText ?? lesson.description;
   const isCorrect = selected === correctAnswer;
 
-  async function saveProgress() {
-    if (!isCorrect) {
+  async function completeLesson(selectedAnswer: string) {
+    if (selectedAnswer !== correctAnswer) {
       setTeacherStatus("Choose the correct meaning first, then finish the lesson.");
       return;
     }
@@ -66,6 +67,8 @@ export function LessonPlayer({ learner, lesson, nextLessonSlug }: LessonPlayerPr
       if (nextLessonSlug) router.push(`/lesson?lesson=${nextLessonSlug}`);
       return;
     }
+    setSaving(true);
+    setTeacherStatus("Correct. Saving your progress and opening the next chapter...");
     const response = await fetch("/api/progress", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -85,6 +88,14 @@ export function LessonPlayer({ learner, lesson, nextLessonSlug }: LessonPlayerPr
     }
     const body = (await response.json().catch(() => null)) as { error?: string } | null;
     setTeacherStatus(body?.error ?? "Could not save progress. Please try again.");
+    setSaving(false);
+  }
+
+  function chooseAnswer(option: string) {
+    setSelected(option);
+    if (option === correctAnswer) {
+      void completeLesson(option);
+    }
   }
 
   function playPhrase() {
@@ -153,9 +164,10 @@ export function LessonPlayer({ learner, lesson, nextLessonSlug }: LessonPlayerPr
             {options.map((option) => {
               const active = selected === option;
               return (
-                <button
-                  key={option}
-                  onClick={() => setSelected(option)}
+                  <button
+                    key={option}
+                  onClick={() => chooseAnswer(option)}
+                  disabled={saving || saved}
                   className={cn(
                     "focus-ring rounded-2xl border border-charcoal/10 bg-cream p-5 text-left text-xl font-bold transition hover:-translate-y-0.5 dark:border-cream/10 dark:bg-ink/64",
                     active && "border-saffron bg-saffron/18"
@@ -177,11 +189,11 @@ export function LessonPlayer({ learner, lesson, nextLessonSlug }: LessonPlayerPr
             role="status"
           >
             <span className="flex items-center gap-2">
-              {isCorrect ? <Check /> : <X />} {isCorrect ? "Correct. Save this chapter and keep going." : firstExercise?.explanation ?? "Close. Listen once more and try again."}
+              {isCorrect ? <Check /> : <X />} {isCorrect ? "Correct. Progress saved automatically." : firstExercise?.explanation ?? "Close. Listen once more and try again."}
             </span>
-            <Button onClick={saveProgress} variant="secondary">
-              {saved ? "Saved" : "Finish lesson"}
-            </Button>
+            <span className="rounded-full bg-cream px-4 py-2 text-sm font-black text-leaf">
+              {saving ? "Saving..." : saved ? "Saved" : "Try again"}
+            </span>
           </div>
         ) : null}
       </Card>

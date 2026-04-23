@@ -1,12 +1,25 @@
 import { BookOpen, FileText, Layers3 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
+import { AdminStudio } from "@/components/admin-studio";
 import { Card } from "@/components/ui";
-import { fullCourseCatalog, sourceMaterials } from "@/lib/course-catalog";
-import { getCurrentLearner } from "@/lib/learner";
+import { canManageUsers, requireContentAdmin } from "@/lib/admin";
+import { sourceMaterials } from "@/lib/course-catalog";
+import { prisma } from "@/lib/prisma";
 
 export default async function AdminCoursesPage() {
-  const learner = await getCurrentLearner();
-  const lessonCount = fullCourseCatalog.reduce((total, unit) => total + unit.lessons.length, 0);
+  const learner = await requireContentAdmin();
+  const [units, users, lessonCount] = await Promise.all([
+    prisma.courseUnit.findMany({
+      orderBy: { order: "asc" },
+      include: { lessons: { orderBy: { order: "asc" }, select: { id: true, title: true, order: true, published: true } } }
+    }),
+    prisma.user.findMany({
+      orderBy: [{ role: "asc" }, { createdAt: "desc" }],
+      take: 50,
+      select: { id: true, name: true, email: true, role: true, xp: true }
+    }),
+    prisma.lesson.count()
+  ]);
 
   return (
     <AppShell title="Admin Courses" learner={learner}>
@@ -14,11 +27,11 @@ export default async function AdminCoursesPage() {
         <Card>
           <Layers3 className="text-leaf dark:text-saffron" />
           <p className="mt-4 text-sm font-bold text-charcoal/60 dark:text-cream/60">Course units</p>
-          <h2 className="font-display text-5xl font-bold">{fullCourseCatalog.length}</h2>
+          <h2 className="font-display text-5xl font-bold">{units.length}</h2>
         </Card>
         <Card>
           <BookOpen className="text-leaf dark:text-saffron" />
-          <p className="mt-4 text-sm font-bold text-charcoal/60 dark:text-cream/60">Chapters</p>
+          <p className="mt-4 text-sm font-bold text-charcoal/60 dark:text-cream/60">Lessons</p>
           <h2 className="font-display text-5xl font-bold">{lessonCount}</h2>
         </Card>
         <Card>
@@ -28,72 +41,16 @@ export default async function AdminCoursesPage() {
         </Card>
       </div>
 
-      <Card className="mt-5">
-        <h2 className="font-display text-4xl font-bold">Source material map</h2>
-        <div className="mt-5 grid gap-4 lg:grid-cols-2">
-          {sourceMaterials.map((source) => (
-            <div key={source.group} className="rounded-2xl bg-cream p-4 dark:bg-ink/64">
-              <h3 className="font-display text-3xl font-bold">{source.group}</h3>
-              <p className="mt-2 text-sm leading-6 text-charcoal/64 dark:text-cream/64">{source.use}</p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {source.files.map((file) => (
-                  <span
-                    key={file}
-                    className="rounded-full bg-leaf/10 px-3 py-1 text-xs font-bold text-leaf dark:bg-saffron/12 dark:text-saffron"
-                  >
-                    {file}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
+      <Card className="mt-5 mb-5 bg-charcoal text-cream dark:bg-black">
+        <p className="text-xs font-black uppercase tracking-[0.22em] text-saffron">Admin studio</p>
+        <h2 className="mt-3 font-display text-5xl font-bold">Build the path, then let learners move step by step.</h2>
+        <p className="mt-4 max-w-3xl text-cream/72">
+          Inspired by effective language apps: keep lessons bite-sized, mix new material with review, keep the next step obvious,
+          and reserve full course control for admins.
+        </p>
       </Card>
 
-      <div className="mt-5 space-y-5">
-        {fullCourseCatalog.map((unit, unitIndex) => (
-          <Card key={unit.slug}>
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-              <div>
-                <p className="text-xs font-black uppercase tracking-[0.18em] text-leaf dark:text-saffron">
-                  Unit {unitIndex + 1} • {unit.level.replace("_", " ")}
-                </p>
-                <h2 className="mt-2 font-display text-4xl font-bold">{unit.title}</h2>
-                <p className="mt-2 max-w-3xl text-sm leading-6 text-charcoal/64 dark:text-cream/64">
-                  {unit.description}
-                </p>
-                <p className="mt-2 text-xs font-semibold text-charcoal/52 dark:text-cream/52">
-                  Based on: {unit.source}
-                </p>
-              </div>
-              <span className="rounded-full bg-leaf px-4 py-2 text-sm font-black text-cream">
-                {unit.lessons.length} chapters
-              </span>
-            </div>
-            <div className="mt-5 grid gap-3 md:grid-cols-2">
-              {unit.lessons.map(([slug, title, description, exercises], chapterIndex) => (
-                <div key={slug} className="rounded-2xl bg-cream p-4 dark:bg-ink/64">
-                  <p className="text-xs font-black uppercase tracking-[0.16em] text-leaf dark:text-saffron">
-                    Chapter {chapterIndex + 1}
-                  </p>
-                  <h3 className="mt-1 font-display text-2xl font-bold">{title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-charcoal/64 dark:text-cream/64">{description}</p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {exercises.map((exercise) => (
-                      <span
-                        key={exercise}
-                        className="rounded-full bg-charcoal/8 px-3 py-1 text-xs font-bold dark:bg-cream/10"
-                      >
-                        {exercise}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Card>
-        ))}
-      </div>
+      <AdminStudio units={units} users={users} canManageUsers={canManageUsers(learner.role)} />
     </AppShell>
   );
 }

@@ -18,6 +18,7 @@ const emptyStats: LearnerStats = {
   id: "",
   name: "Learner",
   email: "",
+  role: "LEARNER",
   streak: 0,
   xp: 0,
   hearts: 5,
@@ -70,13 +71,15 @@ export function AppShell({
             <CreditCard size={20} aria-hidden="true" />
             Plans
           </Link>
-          <Link
-            href="/admin/courses"
-            className="focus-ring flex items-center gap-3 rounded-2xl px-4 py-3 font-bold text-charcoal/72 transition hover:bg-leaf hover:text-cream dark:text-cream/72 dark:hover:bg-saffron dark:hover:text-ink"
-          >
-            <LibraryBig size={20} aria-hidden="true" />
-            Admin Courses
-          </Link>
+          {learner.role === "ADMIN" || learner.role === "EDITOR" ? (
+            <Link
+              href="/admin/courses"
+              className="focus-ring flex items-center gap-3 rounded-2xl px-4 py-3 font-bold text-charcoal/72 transition hover:bg-leaf hover:text-cream dark:text-cream/72 dark:hover:bg-saffron dark:hover:text-ink"
+            >
+              <LibraryBig size={20} aria-hidden="true" />
+              Admin Courses
+            </Link>
+          ) : null}
         </nav>
       </aside>
 

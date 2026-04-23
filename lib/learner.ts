@@ -7,6 +7,7 @@ export type LearnerStats = {
   id: string;
   name: string;
   email: string;
+  role: string;
   xp: number;
   streak: number;
   hearts: number;
@@ -26,6 +27,7 @@ export async function getCurrentLearner() {
       id: true,
       name: true,
       email: true,
+      role: true,
       xp: true,
       streak: true,
       hearts: true,
@@ -41,6 +43,7 @@ export async function getCurrentLearner() {
     id: learner.id,
     name: learner.name ?? "New learner",
     email: learner.email,
+    role: learner.role,
     xp: learner.xp,
     streak: learner.streak,
     hearts: learner.hearts,
@@ -48,7 +51,7 @@ export async function getCurrentLearner() {
   };
 }
 
-export async function getCourseMapForUser(userId: string) {
+export async function getCourseMapForUser(userId: string, options: { unlockAll?: boolean } = {}) {
   const units = await prisma.courseUnit.findMany({
     orderBy: { order: "asc" },
     include: {
@@ -80,7 +83,7 @@ export async function getCourseMapForUser(userId: string) {
 
     const mappedLessons = unit.lessons.map((lesson) => {
       const progress = lesson.progress[0]?.percent ?? 0;
-      const locked = lessonIndex >= 2 && completedBefore < lessonIndex;
+      const locked = options.unlockAll ? false : lessonIndex >= 2 && completedBefore < lessonIndex;
       if (progress === 100) completedBefore += 1;
       lessonIndex += 1;
 

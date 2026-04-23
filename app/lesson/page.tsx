@@ -11,7 +11,7 @@ export default async function LessonPage({
 }) {
   const learner = await getCurrentLearner();
   const params = await searchParams;
-  const units = await getCourseMapForUser(learner.id);
+  const units = await getCourseMapForUser(learner.id, { unlockAll: learner.role === "ADMIN" });
   const flatLessons = units.flatMap((unit) => unit.lessons);
   const requested = params.lesson
     ? flatLessons.find((item) => item.slug === params.lesson)

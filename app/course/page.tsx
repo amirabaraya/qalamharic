@@ -8,7 +8,7 @@ import { getCourseMapForUser, getCurrentLearner } from "@/lib/learner";
 
 export default async function CoursePage() {
   const learner = await getCurrentLearner();
-  const units = await getCourseMapForUser(learner.id);
+  const units = await getCourseMapForUser(learner.id, { unlockAll: learner.role === "ADMIN" });
 
   return (
     <AppShell title="Course Map" learner={learner}>
